@@ -8,11 +8,11 @@ export class TeamEntity {
     @Column({ unique: true })
     name: string;
 
-    @Column({ nullable: true })
-    base: string;
+    @Column({ type: 'varchar', nullable: true })
+    base: string | null;
 
-    @Column({ name: 'founded_year', nullable: true })
-    founded_year: number;
+    @Column({ name: 'founded_year', type: 'int', nullable: true })
+    founded_year: number | null;
 
     @Column({ default: true })
     active: boolean;

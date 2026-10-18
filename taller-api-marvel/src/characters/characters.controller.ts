@@ -1,21 +1,27 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseEnumPipe, ParseIntPipe, Patch, Post, Put, Query } from '@nestjs/common';
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { CharactersService } from './characters.service.js';
-import { CharacterEntity } from './entities/character.entity.js';
+import { CharacterEntity, CharacterStatus } from './entities/character.entity.js';
 
+@ApiTags('characters')
 @Controller('characters')
 export class CharactersController {
 
     constructor(private readonly charactersService: CharactersService) { }
 
-    //Traer todos los personajes
     @Get()
-    findAll(): Promise<CharacterEntity[]> {
-        return this.charactersService.findAll();
+    @ApiQuery({ name: 'status', enum: CharacterStatus, required: false })
+    @ApiQuery({ name: 'teamId', type: Number, required: false })
+    findAll(
+        @Query('status', new ParseEnumPipe(CharacterStatus, { optional: true })) status?: CharacterStatus,
+        @Query('teamId', new ParseIntPipe({ optional: true })) teamId?: number,
+    ): Promise<CharacterEntity[]> {
+        return this.charactersService.findAll(status, teamId);
     }
 
     @Get(':id')
-    findById(@Param('id') id: number): Promise<CharacterEntity> {
+    findById(@Param('id', ParseIntPipe) id: number): Promise<CharacterEntity> {
         return this.charactersService.findById(id);
     }
 
@@ -25,17 +31,21 @@ export class CharactersController {
     }
 
     @Put(':id')
-    update(@Param('id') id: number, @Body() character: CharacterEntity): Promise<CharacterEntity> {
-        return this.charactersService.update(id, character, character.status);
+    update(@Param('id', ParseIntPipe) id: number, @Body() character: CharacterEntity): Promise<CharacterEntity> {
+        return this.charactersService.update(id, character);
     }
 
-    @Patch(':id/:status')
-    partialUpdate(@Param('id') id: number,@Param('status') status: string, @Body() character: Partial<CharacterEntity>): Promise<CharacterEntity> {
-        return this.charactersService.update(id, character as CharacterEntity, status);
+    @Patch(':id/status')
+    @ApiBody({ schema: { properties: { status: { type: 'string', enum: Object.values(CharacterStatus) } } } })
+    updateStatus(
+        @Param('id', ParseIntPipe) id: number,
+        @Body('status', new ParseEnumPipe(CharacterStatus)) status: CharacterStatus,
+    ): Promise<CharacterEntity> {
+        return this.charactersService.updateStatus(id, status);
     }
 
     @Delete(':id')
-    delete(@Param('id') id: number): Promise<void> {
+    delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
         return this.charactersService.delete(id);
     }
 }

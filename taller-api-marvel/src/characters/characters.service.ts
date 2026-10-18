@@ -21,5 +21,15 @@ export class CharactersService {
         return character;
     }
 
+    create(character: CharacterEntity): Promise<CharacterEntity> {
+        return this.charactersRepository.save(character);
+    }
 
+    update(id: number, character: CharacterEntity, status: string): Promise<CharacterEntity> {
+        return this.charactersRepository.save({ ...character, id, status });
+    }
+
+    delete(id: number): Promise<void> {
+        return this.charactersRepository.delete(id).then(() => { });
+    }
 }

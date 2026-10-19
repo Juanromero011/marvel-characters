@@ -3,6 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { DeepPartial, FindOptionsWhere, Repository } from "typeorm";
 import { CharacterEntity, CharacterStatus } from "./entities/character.entity.js";
 import { TeamEntity } from "../teams/entities/teams.entity.js";
+import { CreateCharacterDto } from "./dto/create-character.dto.js";
+import { UpdateCharacterDto } from "./dto/update-character.dto.js";
 
 @Injectable()
 export class CharactersService {
@@ -31,15 +33,15 @@ export class CharactersService {
         return character;
     }
 
-    async create(character: CharacterEntity): Promise<CharacterEntity> {
-        await this.validateTeam(character.team_id);
-        return this.save(character);
+    async create(dto: CreateCharacterDto): Promise<CharacterEntity> {
+        await this.validateTeam(dto.team_id);
+        return this.save(dto);
     }
 
-    async update(id: number, character: CharacterEntity): Promise<CharacterEntity> {
+    async update(id: number, dto: UpdateCharacterDto): Promise<CharacterEntity> {
         await this.findById(id);
-        await this.validateTeam(character.team_id);
-        return this.save({ ...character, team_id: character.team_id ?? null, id });
+        await this.validateTeam(dto.team_id);
+        return this.save({ ...dto, team_id: dto.team_id ?? null, id });
     }
 
     async updateStatus(id: number, status: CharacterStatus): Promise<CharacterEntity> {
@@ -72,7 +74,7 @@ export class CharactersService {
             return await this.charactersRepository.save(data);
         } catch (e) {
             if ((e as { code?: string }).code === '23505') {
-                throw new ConflictException(`A character with alias ${data.alias} already exists`);
+                throw new ConflictException('A character with that alias already exists');
             }
             throw e;
         }

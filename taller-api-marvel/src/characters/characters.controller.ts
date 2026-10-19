@@ -1,8 +1,11 @@
 import { Body, Controller, Delete, Get, Param, ParseEnumPipe, ParseIntPipe, Patch, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { CharactersService } from './characters.service.js';
 import { CharacterEntity, CharacterStatus } from './entities/character.entity.js';
+import { CreateCharacterDto } from './dto/create-character.dto.js';
+import { UpdateCharacterDto } from './dto/update-character.dto.js';
+import { UpdateStatusDto } from './dto/update-status.dto.js';
 
 @ApiTags('characters')
 @Controller('characters')
@@ -26,22 +29,18 @@ export class CharactersController {
     }
 
     @Post()
-    create(@Body() character: CharacterEntity): Promise<CharacterEntity> {
-        return this.charactersService.create(character);
+    create(@Body() dto: CreateCharacterDto): Promise<CharacterEntity> {
+        return this.charactersService.create(dto);
     }
 
     @Put(':id')
-    update(@Param('id', ParseIntPipe) id: number, @Body() character: CharacterEntity): Promise<CharacterEntity> {
-        return this.charactersService.update(id, character);
+    update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateCharacterDto): Promise<CharacterEntity> {
+        return this.charactersService.update(id, dto);
     }
 
     @Patch(':id/status')
-    @ApiBody({ schema: { properties: { status: { type: 'string', enum: Object.values(CharacterStatus) } } } })
-    updateStatus(
-        @Param('id', ParseIntPipe) id: number,
-        @Body('status', new ParseEnumPipe(CharacterStatus)) status: CharacterStatus,
-    ): Promise<CharacterEntity> {
-        return this.charactersService.updateStatus(id, status);
+    updateStatus(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateStatusDto): Promise<CharacterEntity> {
+        return this.charactersService.updateStatus(id, dto.status);
     }
 
     @Delete(':id')
